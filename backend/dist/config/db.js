@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.reconnectDB = exports.getDbStatus = exports.isDbConnected = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const autoSeed_1 = require("../utils/autoSeed");
+const cpanelDbEngine_1 = require("./cpanelDbEngine");
 const isPlaceholderUri = (val) => {
     if (!val || !val.trim())
         return true;
@@ -84,11 +85,9 @@ const connectDB = async () => {
         return cached.conn;
     }
     setupConnectionListeners();
-    const uri = getMongoUri();
-    if (process.env.NODE_ENV === 'production' && uri.includes('127.0.0.1:27017')) {
-        const fastErr = new Error('Placeholder DATABASE_URL in production (using cloud gateway fallback)');
-        lastConnectionError = fastErr.message;
-        throw fastErr;
+    let uri = getMongoUri();
+    if (uri.includes('127.0.0.1:27017') || uri.includes('ekosmart_Feedback')) {
+        uri = await (0, cpanelDbEngine_1.startCpanelDbServer)();
     }
     // 3. If a connection promise is already in flight, reuse it
     if (!cached.promise) {

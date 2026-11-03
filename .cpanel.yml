@@ -4,6 +4,7 @@ deployment:
     - export DEPLOY_PATH="${HOME}/ekosmartfeedback.in"
     - /bin/test -d frontend/dist -a -f frontend/dist/index.html -a -f frontend/dist/.htaccess
     - /bin/mkdir -p "$DEPLOY_PATH"
+    - /bin/rm -rf "$DEPLOY_PATH/api"
     - /bin/cp -a frontend/dist/. "$DEPLOY_PATH/"
     - /bin/test -d admin-portal/dist -a -f admin-portal/dist/index.html -a -f admin-portal/dist/.htaccess
     - /bin/mkdir -p "$DEPLOY_PATH/admin"
@@ -11,11 +12,12 @@ deployment:
     - /bin/test -d employee-portal/dist -a -f employee-portal/dist/index.html -a -f employee-portal/dist/.htaccess
     - /bin/mkdir -p "$DEPLOY_PATH/employee"
     - /bin/cp -a employee-portal/dist/. "$DEPLOY_PATH/employee/"
-    - /bin/mkdir -p "$DEPLOY_PATH/api"
-    - /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
+    - /bin/mkdir -p "$DEPLOY_PATH/api_node"
+    - /bin/cp api_node/.htaccess "$DEPLOY_PATH/api_node/.htaccess"
     - export API_DEPLOY_PATH="${HOME}/ekosmart-api"
     - /bin/test -d backend/dist -a -f backend/dist/server.js
     - /bin/mkdir -p "$API_DEPLOY_PATH/dist"
+    - /bin/mkdir -p "$API_DEPLOY_PATH/data"
     - /bin/mkdir -p "$API_DEPLOY_PATH/uploads/complaints"
     - /bin/mkdir -p "$API_DEPLOY_PATH/uploads/employees"
     - /bin/cp -a backend/dist/. "$API_DEPLOY_PATH/dist/"
@@ -27,4 +29,6 @@ deployment:
     - (export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && cd "$API_DEPLOY_PATH" && ([ -d node_modules/express ] || /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1))
     - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
     - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
-    - /usr/bin/pkill -u "$USER" -f "lsnode" 2>/dev/null || /usr/bin/pkill -u "$USER" node 2>/dev/null || true
+    - /usr/bin/pkill -u "$USER" -f "cpanelDbEngine" 2>/dev/null || true
+    - nohup /opt/alt/alt-nodejs20/root/usr/bin/node "$API_DEPLOY_PATH/dist/config/cpanelDbEngine.js" --daemon >/dev/null 2>&1 &
+    - /usr/bin/pkill -u "$USER" -f "lsnode" 2>/dev/null || true

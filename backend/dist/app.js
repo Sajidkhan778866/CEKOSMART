@@ -58,6 +58,13 @@ const media_routes_1 = __importDefault(require("./routes/media.routes"));
 const leave_routes_1 = __importDefault(require("./routes/leave.routes"));
 const database_routes_1 = __importDefault(require("./routes/database.routes"));
 const app = (0, express_1.default)();
+// Normalize cPanel LiteSpeed /api_node internal Passenger base URI
+app.use((req, _res, next) => {
+    if (req.url && req.url.startsWith('/api_node')) {
+        req.url = req.url.replace(/^\/api_node/, '') || '/';
+    }
+    next();
+});
 // Allowed Origins Parser
 const configuredOrigins = [
     process.env.CORS_ORIGIN,
