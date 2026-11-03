@@ -19,12 +19,11 @@ deployment:
     - /bin/cp -a backend/dist/. "$API_DEPLOY_PATH/dist/"
     - /bin/cp -a backend/uploads/. "$API_DEPLOY_PATH/uploads/" 2>/dev/null || true
     - /bin/cp backend/package.json "$API_DEPLOY_PATH/"
-    - /bin/cp backend/package-lock.json "$API_DEPLOY_PATH/" 2>/dev/null || true
     - /bin/cp backend/app.js "$API_DEPLOY_PATH/"
     - /bin/cp backend/.env.example "$API_DEPLOY_PATH/.env.example" 2>/dev/null || true
     - /bin/cp backend/.env "$API_DEPLOY_PATH/.env" 2>/dev/null || true
-    - cd "$API_DEPLOY_PATH" && /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev 2>&1 || true
+    - export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && /bin/mkdir -p "${HOME}/bin" && /bin/ln -sf /opt/alt/alt-nodejs20/root/usr/bin/node "${HOME}/bin/node" && /bin/ln -sf /opt/alt/alt-nodejs20/root/usr/bin/npm "${HOME}/bin/npm" && cd "$API_DEPLOY_PATH" && /bin/rm -rf node_modules package-lock.json && /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1
     - /bin/mkdir -p "$DEPLOY_PATH/api"
-    - /bin/grep -q "PassengerAppRoot" "$DEPLOY_PATH/api/.htaccess" 2>/dev/null || /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
+    - /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
     - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
     - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
