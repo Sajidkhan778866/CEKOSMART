@@ -63,6 +63,9 @@ app.use((req, _res, next) => {
     if (req.url && req.url.startsWith('/api_node')) {
         req.url = req.url.replace(/^\/api_node/, '') || '/';
     }
+    if (req.originalUrl && req.originalUrl.startsWith('/api_node')) {
+        req.originalUrl = req.originalUrl.replace(/^\/api_node/, '') || '/';
+    }
     next();
 });
 // Allowed Origins Parser

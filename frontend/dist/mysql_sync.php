@@ -12,12 +12,14 @@ if ($mysqli->connect_errno) {
     exit;
 }
 $mysqli->set_charset('utf8mb4');
+$mysqli->query("DROP TABLE IF EXISTS `Array`");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
-    $coll = preg_replace('/[^a-zA-Z0-9_]/', '', $input['collection'] ?? '');
+    $rawColl = isset($input['collection']) && is_string($input['collection']) ? $input['collection'] : '';
+    $coll = preg_replace('/[^a-zA-Z0-9_]/', '', $rawColl);
     $docs = $input['docs'] ?? [];
-    if ($coll && is_array($docs)) {
+    if ($coll && $coll !== 'Array' && is_array($docs)) {
         $createSql = "CREATE TABLE IF NOT EXISTS `$coll` (
             `id` VARCHAR(64) NOT NULL PRIMARY KEY,
             `title_or_name` VARCHAR(255) DEFAULT NULL,

@@ -11,6 +11,8 @@ const PHP_MYSQL_SYNC_URL = "http://ekosmartfeedback.in.ekosmartdrive.in/mysql_sy
 
 let collections = {};
 let saveTimer = null;
+let lastLoadedMtime = 0;
+const dirtyCollections = new Set();
 
 function serializeExtended(val) {
   if (val === null || val === undefined) return val;
@@ -58,8 +60,10 @@ function loadFromDisk() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (fs.existsSync(DB_FILE)) {
+      const stat = fs.statSync(DB_FILE);
       const raw = JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
       collections = deserializeExtended(raw) || {};
+      lastLoadedMtime = stat.mtimeMs;
     }
   } catch (e) {
     console.error("[cPanelDB] Load error:", e.message);
@@ -67,7 +71,23 @@ function loadFromDisk() {
   }
 }
 
+function checkExternalDiskReload() {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const stat = fs.statSync(DB_FILE);
+      if (stat.mtimeMs > lastLoadedMtime + 5) {
+        loadFromDisk();
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
 function scheduleSave(changedColl) {
+  if (changedColl && typeof changedColl === "string") {
+    dirtyCollections.add(changedColl);
+  }
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
@@ -76,9 +96,14 @@ function scheduleSave(changedColl) {
       }
       const serialized = serializeExtended(collections);
       fs.writeFileSync(DB_FILE, JSON.stringify(serialized), "utf8");
+      try {
+        lastLoadedMtime = fs.statSync(DB_FILE).mtimeMs;
+      } catch {}
       // Also trigger background sync to cPanel MySQL database (ekosmart_Feedback)
-      if (changedColl) {
-        syncCollectionToMysql(changedColl, serialized[changedColl] || []).catch(() => {});
+      const toSync = Array.from(dirtyCollections);
+      dirtyCollections.clear();
+      for (const collName of toSync) {
+        syncCollectionToMysql(collName, serialized[collName] || []).catch(() => {});
       }
     } catch (e) {
       console.error("[cPanelDB] Save error:", e.message);
@@ -513,6 +538,7 @@ function runAggregate(coll, pipeline) {
 }
 
 function handleCommand(cmd) {
+  checkExternalDiskReload();
   const dbName = cmd.$db || "ekosmart_Feedback";
   if (cmd.hello || cmd.ismaster || cmd.isMaster) {
     return {
