@@ -85,6 +85,11 @@ const connectDB = async () => {
     }
     setupConnectionListeners();
     const uri = getMongoUri();
+    if (process.env.NODE_ENV === 'production' && uri.includes('127.0.0.1:27017')) {
+        const fastErr = new Error('Placeholder DATABASE_URL in production (using cloud gateway fallback)');
+        lastConnectionError = fastErr.message;
+        throw fastErr;
+    }
     // 3. If a connection promise is already in flight, reuse it
     if (!cached.promise) {
         const opts = {

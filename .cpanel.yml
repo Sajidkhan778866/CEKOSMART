@@ -27,3 +27,4 @@ deployment:
     - (export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && cd "$API_DEPLOY_PATH" && ([ -d node_modules/express ] || /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1))
     - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
     - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
+    - /usr/bin/pkill -u "$USER" -f "lsnode" 2>/dev/null || /usr/bin/pkill -u "$USER" node 2>/dev/null || true
