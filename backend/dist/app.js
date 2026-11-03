@@ -114,13 +114,15 @@ app.use(express_1.default.json({ limit: '50mb' }));
 app.use(express_1.default.urlencoded({ limit: '50mb', extended: true }));
 // Serverless DB auto-connection middleware
 app.use(async (req, res, next) => {
-    // Allow health check, root ping, database setup routes, and static uploads to bypass DB block if needed
+    // Allow health check, root ping, database setup routes, SMTP test, and static uploads to bypass DB block if needed
     if (req.path === '/' ||
         req.path === '/api' ||
         req.path === '/api/v1' ||
         req.path === '/v1' ||
         req.path.endsWith('/health') ||
         req.path.includes('/database') ||
+        req.path.includes('/test-smtp') ||
+        req.path.includes('/smtp-config') ||
         req.path.startsWith('/uploads') ||
         req.path.startsWith('/api/v1/uploads') ||
         req.path.startsWith('/api/uploads') ||
@@ -132,12 +134,36 @@ app.use(async (req, res, next) => {
         next();
     }
     catch (err) {
-        console.error('[Middleware] Database connection error during request:', err.message || err);
-        return res.status(503).json({
-            success: false,
-            message: `Database connection unavailable: ${err.message || 'Connection failed'}. Please check MongoDB Atlas connection string (DATABASE_URL / MONGODB_URI) and IP access whitelist (0.0.0.0/0).`,
-            error: err.message,
-        });
+        try {
+            const axios = require('axios');
+            let cleanUrl = req.originalUrl || req.url || '/';
+            if (!cleanUrl.startsWith('/api')) {
+                cleanUrl = cleanUrl.startsWith('/v1') ? `/api${cleanUrl}` : `/api/v1${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+            }
+            const targetUrl = `https://backend-sajidkhan778866s-projects.vercel.app${cleanUrl}`;
+            const forwardHeaders = {};
+            if (req.headers.authorization)
+                forwardHeaders['Authorization'] = req.headers.authorization;
+            if (req.headers['content-type'])
+                forwardHeaders['Content-Type'] = req.headers['content-type'];
+            const response = await axios({
+                method: req.method,
+                url: targetUrl,
+                data: ['POST', 'PUT', 'PATCH'].includes(req.method.toUpperCase()) ? req.body : undefined,
+                headers: forwardHeaders,
+                validateStatus: () => true,
+                timeout: 15000,
+            });
+            return res.status(response.status).json(response.data);
+        }
+        catch (_proxyErr) {
+            console.error('[Middleware] Database connection error during request:', err.message || err);
+            return res.status(503).json({
+                success: false,
+                message: `Database connection unavailable: ${err.message || 'Connection failed'}. Please check MongoDB Atlas connection string (DATABASE_URL / MONGODB_URI) and IP access whitelist (0.0.0.0/0).`,
+                error: err.message,
+            });
+        }
     }
 });
 // Root ping (supports /, /api, /api/v1, /v1)
