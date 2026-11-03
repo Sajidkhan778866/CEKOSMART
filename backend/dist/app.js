@@ -62,6 +62,9 @@ const app = (0, express_1.default)();
 const configuredOrigins = [
     process.env.CORS_ORIGIN,
     process.env.FRONTEND_URL,
+    'https://ekosmartfeedback.in',
+    'https://www.ekosmartfeedback.in',
+    'https://ekosmartfeedback.in.ekosmartdrive.in',
     'https://www.ekosmartdrive.in',
     'https://ekosmartdrive.in',
     'https://www.ekosmartdrivecomplain.in',

@@ -1,16 +1,8 @@
-# ----------------------------------------------------------------------
-# Ekosmart Backend API Directory (.htaccess)
-# ----------------------------------------------------------------------
-# Note: When you create the Node.js application in cPanel ("Setup Node.js App")
-# with Application URL "/api", cPanel Phusion Passenger automatically injects
-# PassengerAppRoot and PassengerBaseURI directives into this file.
-#
-# If instead your Node.js server is running on port 5000 (127.0.0.1:5000),
-# Apache mod_proxy will forward /api/* requests cleanly when enabled.
-# ----------------------------------------------------------------------
-
-Options -Indexes
-
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-</IfModule>
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/ekosmart/ekosmart-api"
+PassengerBaseURI "/api"
+PassengerNodejs "/opt/alt/alt-nodejs20/root/usr/bin/node"
+PassengerAppType node
+PassengerStartupFile app.js
+PassengerEnabled on
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END

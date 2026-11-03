@@ -14,16 +14,11 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (err) => {
     console.error('[Process] Uncaught Exception:', err);
 });
-// Start listening immediately on Passenger socket/port
+// Start listening immediately (CloudLinux Passenger & LiteSpeed lsnode automatically intercept .listen(PORT))
 const rawPort = process.env.PORT || 5000;
-const isPassenger = typeof global.PhusionPassenger !== 'undefined' || rawPort === 'passenger';
-const server = isPassenger
-    ? app_1.default.listen('passenger', () => {
-        console.log('[Server] Ekosmart API Server running under Phusion Passenger');
-    })
-    : app_1.default.listen(rawPort, () => {
-        console.log(`[Server] Ekosmart API Server running on port ${rawPort}`);
-    });
+const server = app_1.default.listen(rawPort, () => {
+    console.log(`[Server] Ekosmart API Server running on port ${rawPort}`);
+});
 // Connect to MongoDB asynchronously without blocking HTTP listener
 (0, db_1.default)()
     .then(() => {
