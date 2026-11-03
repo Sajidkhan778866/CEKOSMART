@@ -1,0 +1,53 @@
+{
+  "name": "ekosmart-backend",
+  "version": "1.0.0",
+  "description": "Ekosmart EV Battery Solution & Spare Parts - Backend API Server",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon src/server.ts",
+    "build": "node -e \"const fs=require('fs'),cp=require('child_process');if(fs.existsSync('src')&&fs.existsSync('tsconfig.json')){cp.execSync('npx tsc',{stdio:'inherit'})}else{console.log('Pre-compiled dist/ ready for cPanel deployment.')}\""
+  },
+  "allowScripts": {
+    "bcrypt": true,
+    "esbuild": true
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "bcrypt",
+      "esbuild"
+    ]
+  },
+  "keywords": [
+    "ekosmart",
+    "cpanel",
+    "api"
+  ],
+  "author": "Ekosmart",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "form-data": "^4.0.6",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.0",
+    "multer": "^2.3.0",
+    "nodemailer": "^10.1.2",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^22.20.2",
+    "@types/nodemailer": "^8.0.2",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

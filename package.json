@@ -1,0 +1,47 @@
+{
+  "name": "ekosmart-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ekosmart EV Battery Solution & Spare Parts - Full-Stack Enterprise Platform",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "build": "npm run assemble:dist",
+    "build:all": "npm run assemble:dist",
+    "build:backend": "npm run build --prefix backend",
+    "assemble:dist": "node -e \"const fs=require('fs');if(fs.existsSync('frontend/dist'))fs.cpSync('frontend/dist','dist',{recursive:true,force:true});if(fs.existsSync('admin-portal/dist'))fs.cpSync('admin-portal/dist','dist/admin',{recursive:true,force:true});if(fs.existsSync('employee-portal/dist'))fs.cpSync('employee-portal/dist','dist/employee',{recursive:true,force:true});if(fs.existsSync('api/.htaccess')){fs.mkdirSync('dist/api',{recursive:true});fs.cpSync('api/.htaccess','dist/api/.htaccess',{force:true});}console.log('Assembled dist/ directory for cPanel deployment.');\""
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "bcrypt": true
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "bcrypt"
+    ]
+  },
+  "dependencies": {
+    "axios": "^1.20.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "form-data": "^4.0.6",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.10.0",
+    "multer": "^2.3.0",
+    "nodemailer": "^10.1.2",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^22.20.2",
+    "@types/nodemailer": "^8.0.2",
+    "typescript": "^5.9.3"
+  }
+}

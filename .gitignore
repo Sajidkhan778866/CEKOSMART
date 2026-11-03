@@ -1,0 +1,22 @@
+# Windows Drive Root System Folders
+System Volume Information/
+$RECYCLE.BIN/
+Thumbs.db
+desktop.ini
+
+# Dependencies & Logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+
+# Note: dist/ folders and cpanel-ready-zips/ are intentionally tracked
+# so cPanel Git Version Control (.cpanel.yml) can deploy pre-built artifacts directly.
+!dist/
+!frontend/dist/
+!admin-portal/dist/
+!employee-portal/dist/
+!backend/dist/
+!cpanel-ready-zips/
+!api/.htaccess

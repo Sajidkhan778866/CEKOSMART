@@ -1,0 +1,29 @@
+---
+deployment:
+  tasks:
+    - export DEPLOY_PATH="${HOME}/public_html"
+    - /bin/test -d frontend/dist -a -f frontend/dist/index.html -a -f frontend/dist/.htaccess
+    - /bin/mkdir -p "$DEPLOY_PATH"
+    - /bin/cp -a frontend/dist/. "$DEPLOY_PATH/"
+    - /bin/test -d admin-portal/dist -a -f admin-portal/dist/index.html -a -f admin-portal/dist/.htaccess
+    - /bin/mkdir -p "$DEPLOY_PATH/admin"
+    - /bin/cp -a admin-portal/dist/. "$DEPLOY_PATH/admin/"
+    - /bin/test -d employee-portal/dist -a -f employee-portal/dist/index.html -a -f employee-portal/dist/.htaccess
+    - /bin/mkdir -p "$DEPLOY_PATH/employee"
+    - /bin/cp -a employee-portal/dist/. "$DEPLOY_PATH/employee/"
+    - export API_DEPLOY_PATH="${HOME}/ekosmart-api"
+    - /bin/test -d backend/dist -a -f backend/dist/server.js
+    - /bin/mkdir -p "$API_DEPLOY_PATH/dist"
+    - /bin/mkdir -p "$API_DEPLOY_PATH/uploads/complaints"
+    - /bin/mkdir -p "$API_DEPLOY_PATH/uploads/employees"
+    - /bin/cp -a backend/dist/. "$API_DEPLOY_PATH/dist/"
+    - /bin/cp -a backend/uploads/. "$API_DEPLOY_PATH/uploads/" 2>/dev/null || true
+    - /bin/cp backend/package.json "$API_DEPLOY_PATH/"
+    - /bin/cp backend/package-lock.json "$API_DEPLOY_PATH/" 2>/dev/null || true
+    - /bin/cp backend/app.js "$API_DEPLOY_PATH/"
+    - /bin/cp backend/.env.example "$API_DEPLOY_PATH/.env.example" 2>/dev/null || true
+    - /bin/test -f "$API_DEPLOY_PATH/.env" || /bin/cp backend/.env "$API_DEPLOY_PATH/.env" 2>/dev/null || true
+    - /bin/mkdir -p "$DEPLOY_PATH/api"
+    - /bin/grep -q "PassengerAppRoot" "$DEPLOY_PATH/api/.htaccess" 2>/dev/null || /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
+    - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
+    - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
