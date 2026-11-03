@@ -11,6 +11,8 @@ deployment:
     - /bin/test -d employee-portal/dist -a -f employee-portal/dist/index.html -a -f employee-portal/dist/.htaccess
     - /bin/mkdir -p "$DEPLOY_PATH/employee"
     - /bin/cp -a employee-portal/dist/. "$DEPLOY_PATH/employee/"
+    - /bin/mkdir -p "$DEPLOY_PATH/api"
+    - /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
     - export API_DEPLOY_PATH="${HOME}/ekosmart-api"
     - /bin/test -d backend/dist -a -f backend/dist/server.js
     - /bin/mkdir -p "$API_DEPLOY_PATH/dist"
@@ -21,9 +23,7 @@ deployment:
     - /bin/cp backend/package.json "$API_DEPLOY_PATH/"
     - /bin/cp backend/app.js "$API_DEPLOY_PATH/"
     - /bin/cp backend/.env.example "$API_DEPLOY_PATH/.env.example" 2>/dev/null || true
-    - /bin/cp backend/.env "$API_DEPLOY_PATH/.env" 2>/dev/null || true
-    - export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && /bin/mkdir -p "${HOME}/bin" && /bin/ln -sf /opt/alt/alt-nodejs20/root/usr/bin/node "${HOME}/bin/node" && /bin/ln -sf /opt/alt/alt-nodejs20/root/usr/bin/npm "${HOME}/bin/npm" && cd "$API_DEPLOY_PATH" && /bin/rm -rf node_modules package-lock.json && /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1
-    - /bin/mkdir -p "$DEPLOY_PATH/api"
-    - /bin/cp api/.htaccess "$DEPLOY_PATH/api/.htaccess"
+    - /bin/test -f "$API_DEPLOY_PATH/.env" || /bin/cp backend/.env "$API_DEPLOY_PATH/.env" 2>/dev/null || true
+    - (export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && cd "$API_DEPLOY_PATH" && ([ -d node_modules/express ] || /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1))
     - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
     - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
