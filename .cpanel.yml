@@ -26,9 +26,11 @@ deployment:
     - /bin/cp backend/app.js "$API_DEPLOY_PATH/"
     - /bin/cp backend/.env.example "$API_DEPLOY_PATH/.env.example" 2>/dev/null || true
     - /bin/cp backend/.env "$API_DEPLOY_PATH/.env" 2>/dev/null || true
+    - /bin/cp backend/data/cpanel_db.json "$API_DEPLOY_PATH/data/cpanel_db.json" 2>/dev/null || true
     - (export PATH="/opt/alt/alt-nodejs20/root/usr/bin:$PATH" && cd "$API_DEPLOY_PATH" && ([ -d node_modules/express ] || /opt/alt/alt-nodejs20/root/usr/bin/npm install --omit=dev --no-package-lock 2>&1))
     - /bin/mkdir -p "$API_DEPLOY_PATH/tmp"
     - /bin/touch "$API_DEPLOY_PATH/tmp/restart.txt"
     - /usr/bin/pkill -u "$USER" -f "cpanelDbEngine" 2>/dev/null || true
+    - /usr/bin/pkill -u "$USER" -f "dist/server.js" 2>/dev/null || true
     - nohup /opt/alt/alt-nodejs20/root/usr/bin/node "$API_DEPLOY_PATH/dist/config/cpanelDbEngine.js" --daemon >/dev/null 2>&1 &
     - /usr/bin/pkill -u "$USER" -f "lsnode" 2>/dev/null || true

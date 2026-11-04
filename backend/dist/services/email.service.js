@@ -18,23 +18,49 @@ const getSmtpConfig = () => {
     return publicInfo;
 };
 exports.getSmtpConfig = getSmtpConfig;
+const normalizeSmtpInput = (rawHost, rawUser, rawPass, rawFrom) => {
+    let host = (rawHost || '').trim() || 'server62.hostingraja.org';
+    if (host === 'mail.ekosmartdrivecomplain.in' || host === 'mail.ekosmartfeedback.in') {
+        host = 'server62.hostingraja.org';
+    }
+    let user = (rawUser || '').trim() || 'support_otp_email@ekosmartdrive.in';
+    if (user.toLowerCase() === 'support_otp_email' ||
+        user.toLowerCase().startsWith('support_otp_email@ekosmartdrivecomplain.in') ||
+        user.toLowerCase().startsWith('support_otp_email@ekosmartfeedback.in') ||
+        user.toLowerCase().startsWith('support_otp_email@ekosmartdrive.in')) {
+        user = 'support_otp_email@ekosmartdrive.in';
+    }
+    else if (!user.includes('@')) {
+        user = `${user.toLowerCase()}@ekosmartdrive.in`;
+    }
+    let pass = (rawPass !== undefined && rawPass !== null ? String(rawPass).trim() : '');
+    if (user.toLowerCase() === 'support_otp_email@ekosmartdrive.in' && (!pass || pass === 'Sajid1503' || pass === 'Shoyab@1516')) {
+        pass = 'Sajid1502';
+    }
+    let from = (rawFrom || '').trim() || `"Ekosmart Verification" <${user}>`;
+    if (from.includes('ekosmartdrivecomplain.in') || from.includes('ekosmartfeedback.in') || !from.includes('@')) {
+        from = `"Ekosmart Verification" <${user}>`;
+    }
+    return { host, user, pass, from };
+};
 const getInternalSmtpCredentialsSync = () => {
     const envHost = process.env.SMTP_HOST?.trim();
     const envPort = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
     const envUser = process.env.SMTP_USER?.trim();
     const envPass = process.env.SMTP_PASS?.trim();
     const envFrom = process.env.SMTP_FROM?.trim();
-    const host = runtimeSmtpOverride?.host || envHost || 'server62.hostingraja.org';
+    const rawHost = runtimeSmtpOverride?.host || envHost || 'server62.hostingraja.org';
     const port = runtimeSmtpOverride?.port || envPort || 465;
     const secure = runtimeSmtpOverride?.secure !== undefined
         ? runtimeSmtpOverride.secure
         : process.env.SMTP_SECURE !== undefined
             ? process.env.SMTP_SECURE === 'true'
             : port === 465;
-    const user = runtimeSmtpOverride?.user || envUser || 'support_otp_email@ekosmartdrivecomplain.in';
-    const pass = runtimeSmtpOverride?.pass !== undefined ? runtimeSmtpOverride.pass : envPass || '';
-    const from = runtimeSmtpOverride?.from || envFrom || `"Ekosmart Verification" <${user}>`;
-    // Default rejectUnauthorized to false so cPanel shared SSL certificates (*.hostingraja.org) work cleanly on Vercel
+    const rawUser = runtimeSmtpOverride?.user || envUser || 'support_otp_email@ekosmartdrive.in';
+    const rawPass = runtimeSmtpOverride?.pass !== undefined ? runtimeSmtpOverride.pass : envPass || 'Sajid1502';
+    const rawFrom = runtimeSmtpOverride?.from || envFrom || `"Ekosmart Verification" <${rawUser}>`;
+    const { host, user, pass, from } = normalizeSmtpInput(rawHost, rawUser, rawPass, rawFrom);
+    // Default rejectUnauthorized to false so cPanel shared SSL certificates (*.hostingraja.org) work cleanly
     const rejectUnauthorized = runtimeSmtpOverride?.rejectUnauthorized !== undefined
         ? runtimeSmtpOverride.rejectUnauthorized
         : process.env.SMTP_REJECT_UNAUTHORIZED === 'true';
@@ -153,16 +179,18 @@ exports.getTransporter = getTransporter;
  */
 const saveSmtpConfiguration = async (params) => {
     const existing = await (0, exports.loadSmtpCredentialsAsync)(true);
-    const finalPass = params.pass && params.pass.trim()
+    const rawPass = params.pass && params.pass.trim()
         ? params.pass.trim()
         : params.useStoredPassword
             ? existing.pass
             : '';
     const port = Number(params.port) || 465;
     const secure = params.secure !== undefined ? Boolean(params.secure) : port === 465;
-    const host = params.host.trim() || 'server62.hostingraja.org';
-    const user = params.user.trim();
-    const from = params.from?.trim() || `"Ekosmart Verification" <${user}>`;
+    const normalized = normalizeSmtpInput(params.host, params.user, rawPass, params.from);
+    const host = normalized.host;
+    const user = normalized.user;
+    const finalPass = normalized.pass;
+    const from = normalized.from;
     const rejectUnauthorized = Boolean(params.rejectUnauthorized);
     // Update process.env in current instance
     process.env.SMTP_HOST = host;
@@ -208,20 +236,23 @@ exports.saveSmtpConfiguration = saveSmtpConfiguration;
  */
 const verifySmtpConnection = async (customParams) => {
     const baseCreds = await (0, exports.loadSmtpCredentialsAsync)(true);
-    const testCreds = customParams
+    const normalizedCustom = customParams
+        ? normalizeSmtpInput(customParams.host?.trim() || baseCreds.host, customParams.user?.trim() || baseCreds.user, customParams.pass && customParams.pass.trim()
+            ? customParams.pass.trim()
+            : customParams.useStoredPassword !== false
+                ? baseCreds.pass
+                : '', customParams.from?.trim() || baseCreds.from)
+        : null;
+    const testCreds = customParams && normalizedCustom
         ? {
-            host: customParams.host?.trim() || baseCreds.host,
+            host: normalizedCustom.host,
             port: Number(customParams.port) || baseCreds.port,
             secure: customParams.secure !== undefined
                 ? Boolean(customParams.secure)
                 : (Number(customParams.port) || baseCreds.port) === 465,
-            user: customParams.user?.trim() || baseCreds.user,
-            pass: customParams.pass && customParams.pass.trim()
-                ? customParams.pass.trim()
-                : customParams.useStoredPassword !== false
-                    ? baseCreds.pass
-                    : '',
-            from: customParams.from?.trim() || baseCreds.from,
+            user: normalizedCustom.user,
+            pass: normalizedCustom.pass,
+            from: normalizedCustom.from,
             rejectUnauthorized: customParams.rejectUnauthorized !== undefined
                 ? Boolean(customParams.rejectUnauthorized)
                 : baseCreds.rejectUnauthorized,
